@@ -108,11 +108,12 @@ func main() {
 }
 
 func getAllListings() []offer {
-	paging := requestPage(1).Paging
-
+	numberOfPages := 1
 	offers := make([]offer, 0, 1000)
-	for i := 1; i <= paging.NumberOfPages; i++ {
+	for i := 1; i <= numberOfPages; i++ {
+		fmt.Printf("%d", numberOfPages)
 		var resultList resultList = requestPage(i)
+		numberOfPages = resultList.Paging.NumberOfPages
 		results := resultList.ResultlistEntries[0].ResultlistEntry
 		for i := 0; i < len(results); i++ {
 			entry := results[i]
