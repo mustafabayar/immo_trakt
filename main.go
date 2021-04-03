@@ -74,6 +74,12 @@ type offer struct {
 }
 
 func main() {
+	os.Setenv("fromEmail", "mbcoders@gmail.com")
+	os.Setenv("toEmail", "bayarmustafa92@gmail.com")
+	os.Setenv("emailHost", "smtp.elasticemail.com")
+	os.Setenv("emailUsername", "mbcoders@gmail.com")
+	os.Setenv("emailPassword", "BC1D9D2BA5CA8FADC5D9B17FAC491AC8D020")
+
 	mail := gomail.NewMessage()
 	mail.SetHeader("From", os.Getenv("fromEmail"))
 	mail.SetHeader("To", os.Getenv("toEmail"))
@@ -111,7 +117,6 @@ func getAllListings() []offer {
 	numberOfPages := 1
 	offers := make([]offer, 0, 1000)
 	for i := 1; i <= numberOfPages; i++ {
-		fmt.Printf("%d", numberOfPages)
 		var resultList resultList = requestPage(i)
 		numberOfPages = resultList.Paging.NumberOfPages
 		results := resultList.ResultlistEntries[0].ResultlistEntry
