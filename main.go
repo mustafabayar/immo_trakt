@@ -13,8 +13,20 @@ import (
 	"time"
 
 	"github.com/go-co-op/gocron"
+	"github.com/kelseyhightower/envconfig"
 	"gopkg.in/gomail.v2"
+	"gopkg.in/yaml.v3"
 )
+
+type Config struct {
+	Email struct {
+		FromEmail string `yaml:"fromEmail", envconfig:"FROM_EMAIL"`
+		ToEmail   string `yaml:"toEmail", envconfig:"TO_EMAIL"`
+		EmailHost string `yaml:"emailHost", envconfig:"EMAIL_HOST"`
+		EmailUser string `yaml:"emailUser", envconfig:"EMAIL_USER"`
+		EmailPW   string `yaml:"emailPW", envconfig:"EMAIL_PW"`
+	} `yaml:"email"`
+}
 
 type response struct {
 	SearchResponseModel searchResponseModel `json:"searchResponseModel"`
@@ -74,17 +86,15 @@ type offer struct {
 }
 
 func main() {
-	os.Setenv("fromEmail", "xxx@gmail.com")
-	os.Setenv("toEmail", "xxx@gmail.com")
-	os.Setenv("emailHost", "smtp.elasticemail.com")
-	os.Setenv("emailUsername", "xxx@gmail.com")
-	os.Setenv("emailPassword", "XXX")
+	var cfg Config
+	readFile(&cfg)
+	readEnv(&cfg)
 
 	mail := gomail.NewMessage()
-	mail.SetHeader("From", os.Getenv("fromEmail"))
-	mail.SetHeader("To", os.Getenv("toEmail"))
+	mail.SetHeader("From", cfg.Email.FromEmail)
+	mail.SetHeader("To", cfg.Email.ToEmail)
 	mail.SetHeader("Subject", "New Flat Found!")
-	d := gomail.NewDialer(os.Getenv("emailHost"), 2525, os.Getenv("emailUsername"), os.Getenv("emailPassword"))
+	d := gomail.NewDialer(cfg.Email.EmailHost, 2525, cfg.Email.EmailUser, cfg.Email.EmailPW)
 
 	m := make(map[string]offer)
 	firstRun := true
@@ -93,18 +103,19 @@ func main() {
 	s.Every(5).Minutes().Do(func() {
 		var offers = getAllListings()
 		for i := 0; i < len(offers); i++ {
-			if _, ok := m[offers[i].ID]; ok {
+			_, ok := m[offers[i].ID]
+			if !ok {
 				fmt.Printf("Already exists: %s \n", offers[i].Link)
 				continue
-			} else {
-				m[offers[i].ID] = offers[i]
-				fmt.Printf("New listing found: %s \n", offers[i].Link)
+			}
 
-				if !firstRun {
-					mail.SetBody("text/html", offers[i].Link)
-					if err := d.DialAndSend(mail); err != nil {
-						panic(err)
-					}
+			m[offers[i].ID] = offers[i]
+			fmt.Printf("New listing found: %s \n", offers[i].Link)
+
+			if !firstRun {
+				mail.SetBody("text/html", offers[i].Link)
+				if err := d.DialAndSend(mail); err != nil {
+					panic(err)
 				}
 			}
 		}
@@ -184,4 +195,25 @@ func requestPage(pageNumber int) resultList {
 		panic(err)
 	}
 	return response.SearchResponseModel.ResultList
+}
+
+func readFile(cfg *Config) {
+	f, err := os.Open("config.yml")
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	decoder := yaml.NewDecoder(f)
+	err = decoder.Decode(cfg)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func readEnv(cfg *Config) {
+	err := envconfig.Process("", cfg)
+	if err != nil {
+		panic(err)
+	}
 }
