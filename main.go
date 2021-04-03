@@ -74,11 +74,11 @@ type offer struct {
 }
 
 func main() {
-	os.Setenv("fromEmail", "mbcoders@gmail.com")
-	os.Setenv("toEmail", "bayarmustafa92@gmail.com")
+	os.Setenv("fromEmail", "xxx@gmail.com")
+	os.Setenv("toEmail", "xxx@gmail.com")
 	os.Setenv("emailHost", "smtp.elasticemail.com")
-	os.Setenv("emailUsername", "mbcoders@gmail.com")
-	os.Setenv("emailPassword", "BC1D9D2BA5CA8FADC5D9B17FAC491AC8D020")
+	os.Setenv("emailUsername", "xxx@gmail.com")
+	os.Setenv("emailPassword", "XXX")
 
 	mail := gomail.NewMessage()
 	mail.SetHeader("From", os.Getenv("fromEmail"))
