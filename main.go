@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gen2brain/beeep"
 	"github.com/go-co-op/gocron"
 	"github.com/kelseyhightower/envconfig"
-	"gopkg.in/gomail.v2"
 	"gopkg.in/yaml.v3"
 )
 
@@ -86,25 +86,25 @@ type offer struct {
 }
 
 func main() {
-	var cfg Config
-	readFile(&cfg)
-	readEnv(&cfg)
+	// var cfg Config
+	// readFile(&cfg)
+	// readEnv(&cfg)
 
-	mail := gomail.NewMessage()
-	mail.SetHeader("From", cfg.Email.FromEmail)
-	mail.SetHeader("To", cfg.Email.ToEmail)
-	mail.SetHeader("Subject", "New Flat Found!")
-	d := gomail.NewDialer(cfg.Email.EmailHost, 2525, cfg.Email.EmailUser, cfg.Email.EmailPW)
+	// mail := gomail.NewMessage()
+	// mail.SetHeader("From", cfg.Email.FromEmail)
+	// mail.SetHeader("To", cfg.Email.ToEmail)
+	// mail.SetHeader("Subject", "New Flat Found!")
+	// d := gomail.NewDialer(cfg.Email.EmailHost, 2525, cfg.Email.EmailUser, cfg.Email.EmailPW)
 
 	m := make(map[string]offer)
 	firstRun := true
 
 	s := gocron.NewScheduler(time.UTC)
-	s.Every(5).Minutes().Do(func() {
+	s.Every(1).Minutes().Do(func() {
 		var offers = getAllListings()
 		for i := 0; i < len(offers); i++ {
-			_, ok := m[offers[i].ID]
-			if !ok {
+			_, found := m[offers[i].ID]
+			if found {
 				fmt.Printf("Already exists: %s \n", offers[i].Link)
 				continue
 			}
@@ -113,8 +113,13 @@ func main() {
 			fmt.Printf("New listing found: %s \n", offers[i].Link)
 
 			if !firstRun {
-				mail.SetBody("text/html", offers[i].Link)
-				if err := d.DialAndSend(mail); err != nil {
+				// mail.SetBody("text/html", offers[i].Link)
+				// if err := d.DialAndSend(mail); err != nil {
+				// 	panic(err)
+				// }
+
+				err := beeep.Notify("ImmoTrakt", "New flat found", "assets/information.png")
+				if err != nil {
 					panic(err)
 				}
 			}
@@ -142,7 +147,7 @@ func getAllListings() []offer {
 
 			wbsOffer := strings.Contains(strings.ToLower(title), "wbs")
 			tauschOffer := strings.Contains(strings.ToLower(title), "tausch")
-			maxWarmRent := float32(800)
+			maxWarmRent := float32(1000)
 
 			if !wbsOffer && !tauschOffer && rent < maxWarmRent {
 				offers = append(offers, offer{ID: id, Rent: rent, Size: size, Room: room, Link: fmt.Sprintf("https://www.immobilienscout24.de/expose/%s", id)})
@@ -166,17 +171,17 @@ func requestPage(pageNumber int) resultList {
 	}
 
 	// Add a Path Segment (Path segment is automatically escaped)
-	baseUrl.Path += "Suche/shape/wohnung-mit-balkon-mieten"
+	baseUrl.Path += "Suche/shape/wohnung-mieten"
 
 	// Prepare Query Parameters
 	params := url.Values{}
 	params.Add("petsallowedtypes", "yes,negotiable")
 	params.Add("numberofrooms", "1.5-")
-	params.Add("price", "-800.0")
+	params.Add("price", "-1000.0")
+	params.Add("pricetype", "calculatedtotalrent")
 	params.Add("livingspace", "50.0-")
-	params.Add("pricetype", "rentpermonth")
-	params.Add("equipment", "builtinkitchen,balcony")
-	params.Add("shape", "dV90X0ltZGhwQXhkRX1nQWpLeWBDZkRpfkA-ZXxAaUJfeEFxQXliQnBDbXtCbFhtfUFuZ0BndkN2SnV0QHlXZ2dDdV1lfUBpT31MY2pAZUFnU3JHdXtAaHdDb2NDeH1DZXNAcF9CZ29AalNrWn5NYWpAcUd7ZEBnUXtRcEd2SGpfQXhkQHRsQ2lrQHhyQmlcYHhBUmJ8QGpNcnNAfk1yV3pRakR5RmBAemlDZF9A")
+	params.Add("equipment", "builtinkitchen")
+	params.Add("shape", "d2h2X0llcW5wQWpLb0V4SGlEeGZBfWRCYF1nfkB8T2F6QHBBZWlCZ0JzYEJ1akBvb0FlV29yQGVVX051TGRQc1BiUHNOakxfT2RIaU50WGleeGdAb2dAZF9Aa2lAbmNAe0RobUFxQnBzQHhGbGBBZnBAdmlCdFt_cUBsWGxc")
 	params.Add("pagenumber", strconv.Itoa(pageNumber))
 
 	// Add Query Parameters to the URL
