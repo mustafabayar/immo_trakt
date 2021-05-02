@@ -3,9 +3,11 @@ Just a hobby flat tracker for **ImmoScout24**. Finds offers according to your se
 There is no web scraping, it works via API calls.
 
 ## How to setup config?
+- - -
 Copy the **config_skeleton.yml** and save it as **config.yml**. Then fill all the config parameters inside the config file.
 
 ### **immo_trakt.frequency**:
+
 In seconds. For example write **300** if you want it to perform search every 5 minutes.
 
 ### **immobilien_scout.search**: 
@@ -34,6 +36,7 @@ The result will look like this:
 You need to copy the id from chat varieble, not message. So it is **111111111** in the above case.
 
 ## How to run?
+- - -
 ```
 go run main.go
 ```
