@@ -105,7 +105,7 @@ func main() {
 	m := make(map[string]offer)
 	firstRun := true
 
-	log.Printf("Program scheduled to run with corn value %s\n", cfg.ImmoTrakt.Frequency)
+	log.Printf("Program scheduled to run with following frequency %s\n", cfg.ImmoTrakt.Frequency)
 	s := gocron.NewScheduler(time.UTC)
 	s.Every(cfg.ImmoTrakt.Frequency).Do(func() {
 		var offers = getAllListings(&cfg)
