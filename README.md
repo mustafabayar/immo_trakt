@@ -9,7 +9,7 @@ Copy the **config_skeleton.yml** and save it as **config.yml**. Then fill all th
 ### **immo_trakt.frequency**:
 In seconds. For example write **300** if you want it to perform search every 5 minutes.
 
-### **immo_trakt.include_current_offers**:
+### **immo_trakt.include_existing_offers**:
 **True** if you want the bot to send message for all the existing offers that fits the given criteria.
 **False** if you want the bot to only start sending offers that are added after the app start running.
 
@@ -43,3 +43,4 @@ You need to copy the id from chat varieble, not message. So it is **111111111** 
 ```
 go run main.go
 ```
+or on Windows run the executable **immo-trakt.exe**
