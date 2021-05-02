@@ -105,6 +105,7 @@ func main() {
 	m := make(map[string]offer)
 	firstRun := true
 
+	log.Printf("Program scheduled to run every %v, seconds", cfg.ImmoTrakt.Frequency)
 	s := gocron.NewScheduler(time.UTC)
 	s.Every(cfg.ImmoTrakt.Frequency).Seconds().Do(func() {
 		var offers = getAllListings(&cfg)
@@ -120,6 +121,7 @@ func main() {
 			fmt.Printf("New listing found: %s \n", listing.Link)
 
 			if !firstRun || cfg.ImmoTrakt.IncludeExistingOffers {
+				log.Printf("Found new offer %s", listing.Link)
 				message := fmt.Sprintf("%s\n%v m²  -  %v rooms  -  %v € warm\n%s", listing.Title, listing.Size, listing.Room, listing.Rent, listing.Link)
 				msg := tgbotapi.NewMessage(cfg.Telegram.ChatId, message)
 				bot.Send(msg)
@@ -175,7 +177,7 @@ func requestPage(config *Config, pageNumber int) resultList {
 	query_params.Set("pagenumber", strconv.Itoa(pageNumber))
 	baseUrl.RawQuery = query_params.Encode()
 
-	fmt.Println(baseUrl.String())
+	log.Printf("Making request to %s", baseUrl.String())
 
 	resp, err := http.Post(baseUrl.String(), "application/json", nil)
 	if err != nil {

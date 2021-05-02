@@ -43,4 +43,8 @@ You need to copy the id from chat varieble, not message. So it is **111111111** 
 ```
 go run main.go
 ```
-or on Windows run the executable **immo-trakt.exe**
+or 
+
+on Windows run the executable **immo-trakt.exe**
+
+on Macos run the **immo-trakt** binary (Make sure it is executable by running "chmod +x path-to-binary")
