@@ -100,7 +100,7 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
-	log.Printf("Authorized on account %s", bot.Self.UserName)
+	log.Printf("Telegram Bot authorized on account %s", bot.Self.UserName)
 
 	m := make(map[string]offer)
 	firstRun := true
