@@ -100,12 +100,12 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
-	log.Printf("Authorized on account %s\n", bot.Self.UserName)
+	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	m := make(map[string]offer)
 	firstRun := true
 
-	log.Printf("Program scheduled to run with following frequency %s\n", cfg.ImmoTrakt.Frequency)
+	log.Printf("Program scheduled to run with following frequency: %s", cfg.ImmoTrakt.Frequency)
 	s := gocron.NewScheduler(time.UTC)
 	s.Every(cfg.ImmoTrakt.Frequency).Do(func() {
 		var offers = getAllListings(&cfg)
@@ -175,7 +175,7 @@ func requestPage(config *Config, pageNumber int) resultList {
 	query_params.Set("pagenumber", strconv.Itoa(pageNumber))
 	baseUrl.RawQuery = query_params.Encode()
 
-	log.Printf("Making request to %s\n", baseUrl.String())
+	log.Printf("Making request to %s", baseUrl.String())
 
 	resp, err := http.Post(baseUrl.String(), "application/json", nil)
 	if err != nil {
