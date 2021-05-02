@@ -82,8 +82,7 @@ type Config struct {
 		IncludeExistingOffers bool   `yaml:"include_existing_offers"`
 	} `yaml:"immo_trakt"`
 	Telegram struct {
-		Token  string `yaml:"token"`
-		ChatId int64  `yaml:"chat_id"`
+		Token string `yaml:"token"`
 	} `yaml:"telegram"`
 	ImmobilienScout struct {
 		Search        string `yaml:"search"`
@@ -101,6 +100,16 @@ func main() {
 		log.Panic(err)
 	}
 	log.Printf("Telegram Bot authorized on account %s", bot.Self.UserName)
+
+	u := tgbotapi.NewUpdate(0)
+	updates, err := bot.GetUpdates(u)
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	chat_id := updates[0].Message.Chat.ID
+	log.Printf("Telegram chat ID found as %v", chat_id)
 
 	m := make(map[string]offer)
 	firstRun := true
@@ -121,7 +130,7 @@ func main() {
 			if !firstRun || cfg.ImmoTrakt.IncludeExistingOffers {
 				log.Printf("Found new offer %s", listing.Link)
 				message := fmt.Sprintf("%s\n%v m²  -  %v rooms  -  %v € warm\n%s", listing.Title, listing.Size, listing.Room, listing.Rent, listing.Link)
-				msg := tgbotapi.NewMessage(cfg.Telegram.ChatId, message)
+				msg := tgbotapi.NewMessage(chat_id, message)
 				bot.Send(msg)
 			}
 		}

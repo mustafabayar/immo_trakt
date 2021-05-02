@@ -26,17 +26,7 @@ Simply go to immobilien scout and make a search according to your criterias and 
 Register a new bot with the [BotFather](https://telegram.me/BotFather). Follow the instructions and create your bot. 
 Botfather will return bot token to access the HTTP API.
 
-### **telegram.chat_id**:
-To get your chat id, you need to send a message to the newly registered bot. After that you can use the following curl command to get the chat id:
-```
-$ curl https://api.telegram.org/bot[TELEGRAM_BOT_TOKEN]/getUpdates
-```
-The result will look like this:
-```
-{"ok":true,"result":[{"update_id":123123123,
-"message":{"message_id":123,"from":{"id":XXXXXXXX,"is_bot":false,"first_name":"YOUR_NAME","language_code":"en"},"chat":{"id":111111111,"first_name":"YOUR_NAME","type":"private"},"date":1231231231,"text":"XYZ"}}]}
-```
-You need to copy the id from chat varieble, not message. So it is **111111111** in the above case.
+Before running the application make sure to first send a message to the created bot on Telegram so that the application can detect which chat to send messages.
 
 ## How to run?
 - - -
