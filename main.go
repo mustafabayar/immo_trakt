@@ -78,7 +78,8 @@ type offer struct {
 
 type Config struct {
 	ImmoTrakt struct {
-		Frequency int32 `yaml:"frequency"`
+		Frequency             int32 `yaml:"frequency"`
+		IncludeExistingOffers bool  `yaml:"include_existing_offers"`
 	} `yaml:"immo_trakt"`
 	Telegram struct {
 		Token  string `yaml:"token"`
@@ -118,7 +119,7 @@ func main() {
 			m[offers[i].ID] = listing
 			fmt.Printf("New listing found: %s \n", listing.Link)
 
-			if !firstRun {
+			if !firstRun || cfg.ImmoTrakt.IncludeExistingOffers {
 				message := fmt.Sprintf("%s\n%v m²  -  %v rooms  -  %v € warm\n%s", listing.Title, listing.Size, listing.Room, listing.Rent, listing.Link)
 				msg := tgbotapi.NewMessage(cfg.Telegram.ChatId, message)
 				bot.Send(msg)

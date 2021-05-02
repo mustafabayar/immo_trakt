@@ -1,5 +1,6 @@
 immo_trakt:
   frequency: 60 #in seconds
+  include_existing_offers: true
 telegram:
   token: botToken
   chat_id: chatId
