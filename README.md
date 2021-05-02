@@ -7,7 +7,7 @@ There is no web scraping, it works via API calls.
 Copy the **config_skeleton.yml** and save it as **config.yml**. Then fill all the config parameters inside the config file.
 
 ### **immo_trakt.frequency**:
-In seconds. For example write **300** if you want it to perform search every 5 minutes.
+Duration string as described in https://golang.org/pkg/time/#ParseDuration. For example 1m means every 1 minute.
 
 ### **immo_trakt.include_existing_offers**:
 **True** if you want the bot to send message for all the existing offers that fits the given criteria.

@@ -78,8 +78,8 @@ type offer struct {
 
 type Config struct {
 	ImmoTrakt struct {
-		Frequency             int32 `yaml:"frequency"`
-		IncludeExistingOffers bool  `yaml:"include_existing_offers"`
+		Frequency             string `yaml:"frequency"`
+		IncludeExistingOffers bool   `yaml:"include_existing_offers"`
 	} `yaml:"immo_trakt"`
 	Telegram struct {
 		Token  string `yaml:"token"`
@@ -100,25 +100,23 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
-	log.Printf("Authorized on account %s", bot.Self.UserName)
+	log.Printf("Authorized on account %s\n", bot.Self.UserName)
 
 	m := make(map[string]offer)
 	firstRun := true
 
-	log.Printf("Program scheduled to run every %v, seconds", cfg.ImmoTrakt.Frequency)
+	log.Printf("Program scheduled to run with corn value %s\n", cfg.ImmoTrakt.Frequency)
 	s := gocron.NewScheduler(time.UTC)
-	s.Every(cfg.ImmoTrakt.Frequency).Seconds().Do(func() {
+	s.Every(cfg.ImmoTrakt.Frequency).Do(func() {
 		var offers = getAllListings(&cfg)
 		for i := 0; i < len(offers); i++ {
 			_, found := m[offers[i].ID]
 			if found {
-				fmt.Printf("Already exists: %s \n", offers[i].Link)
 				continue
 			}
 
 			listing := offers[i]
 			m[offers[i].ID] = listing
-			fmt.Printf("New listing found: %s \n", listing.Link)
 
 			if !firstRun || cfg.ImmoTrakt.IncludeExistingOffers {
 				log.Printf("Found new offer %s", listing.Link)
@@ -177,7 +175,7 @@ func requestPage(config *Config, pageNumber int) resultList {
 	query_params.Set("pagenumber", strconv.Itoa(pageNumber))
 	baseUrl.RawQuery = query_params.Encode()
 
-	log.Printf("Making request to %s", baseUrl.String())
+	log.Printf("Making request to %s\n", baseUrl.String())
 
 	resp, err := http.Post(baseUrl.String(), "application/json", nil)
 	if err != nil {

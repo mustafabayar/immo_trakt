@@ -1,5 +1,5 @@
 immo_trakt:
-  frequency: 60 #in seconds
+  frequency: 1m #every 1 min
   include_existing_offers: true
 telegram:
   token: botToken
