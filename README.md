@@ -27,7 +27,7 @@ Register a new bot with the [BotFather](https://telegram.me/BotFather). Follow t
 Botfather will return bot token to access the HTTP API.
 
 ### **telegram.chat_id**:
-To get your chat id, you need to send a message to the newly registered bot. After that you can use the following bash command to get the chat id:
+To get your chat id, you need to send a message to the newly registered bot. After that you can use the following curl command to get the chat id:
 ```
 $ curl https://api.telegram.org/bot[TELEGRAM_BOT_TOKEN]/getUpdates
 ```
