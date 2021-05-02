@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -12,21 +13,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gen2brain/beeep"
 	"github.com/go-co-op/gocron"
-	"github.com/kelseyhightower/envconfig"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"gopkg.in/yaml.v3"
 )
-
-type Config struct {
-	Email struct {
-		FromEmail string `yaml:"fromEmail", envconfig:"FROM_EMAIL"`
-		ToEmail   string `yaml:"toEmail", envconfig:"TO_EMAIL"`
-		EmailHost string `yaml:"emailHost", envconfig:"EMAIL_HOST"`
-		EmailUser string `yaml:"emailUser", envconfig:"EMAIL_USER"`
-		EmailPW   string `yaml:"emailPW", envconfig:"EMAIL_PW"`
-	} `yaml:"email"`
-}
 
 type response struct {
 	SearchResponseModel searchResponseModel `json:"searchResponseModel"`
@@ -78,30 +68,45 @@ type warmRent struct {
 }
 
 type offer struct {
-	ID   string
-	Rent float32
-	Size float32
-	Room float32
-	Link string
+	ID    string
+	Title string
+	Rent  float32
+	Size  float32
+	Room  float32
+	Link  string
+}
+
+type Config struct {
+	ImmoTrakt struct {
+		Frequency int32 `yaml:"frequency"`
+	} `yaml:"immo_trakt"`
+	Telegram struct {
+		Token  string `yaml:"token"`
+		ChatId int64  `yaml:"chat_id"`
+	} `yaml:"telegram"`
+	ImmobilienScout struct {
+		Search        string `yaml:"search"`
+		ExcludeWBS    bool   `yaml:"exclude_wbs"`
+		ExcludeTausch bool   `yaml:"exclude_tausch"`
+	} `yaml:"immobilien_scout"`
 }
 
 func main() {
-	// var cfg Config
-	// readFile(&cfg)
-	// readEnv(&cfg)
+	var cfg Config
+	readFile(&cfg)
 
-	// mail := gomail.NewMessage()
-	// mail.SetHeader("From", cfg.Email.FromEmail)
-	// mail.SetHeader("To", cfg.Email.ToEmail)
-	// mail.SetHeader("Subject", "New Flat Found!")
-	// d := gomail.NewDialer(cfg.Email.EmailHost, 2525, cfg.Email.EmailUser, cfg.Email.EmailPW)
+	bot, err := tgbotapi.NewBotAPI(cfg.Telegram.Token)
+	if err != nil {
+		log.Panic(err)
+	}
+	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	m := make(map[string]offer)
 	firstRun := true
 
 	s := gocron.NewScheduler(time.UTC)
-	s.Every(1).Minutes().Do(func() {
-		var offers = getAllListings()
+	s.Every(cfg.ImmoTrakt.Frequency).Seconds().Do(func() {
+		var offers = getAllListings(&cfg)
 		for i := 0; i < len(offers); i++ {
 			_, found := m[offers[i].ID]
 			if found {
@@ -109,19 +114,14 @@ func main() {
 				continue
 			}
 
-			m[offers[i].ID] = offers[i]
-			fmt.Printf("New listing found: %s \n", offers[i].Link)
+			listing := offers[i]
+			m[offers[i].ID] = listing
+			fmt.Printf("New listing found: %s \n", listing.Link)
 
 			if !firstRun {
-				// mail.SetBody("text/html", offers[i].Link)
-				// if err := d.DialAndSend(mail); err != nil {
-				// 	panic(err)
-				// }
-
-				err := beeep.Notify("ImmoTrakt", "New flat found", "assets/information.png")
-				if err != nil {
-					panic(err)
-				}
+				message := fmt.Sprintf("%s\n%v m²  -  %v rooms  -  %v € warm\n%s", listing.Title, listing.Size, listing.Room, listing.Rent, listing.Link)
+				msg := tgbotapi.NewMessage(cfg.Telegram.ChatId, message)
+				bot.Send(msg)
 			}
 		}
 		firstRun = false
@@ -129,17 +129,16 @@ func main() {
 	s.StartBlocking()
 }
 
-func getAllListings() []offer {
+func getAllListings(config *Config) []offer {
 	numberOfPages := 1
 	offers := make([]offer, 0, 1000)
 	for i := 1; i <= numberOfPages; i++ {
-		var resultList resultList = requestPage(i)
+		var resultList resultList = requestPage(config, i)
 		numberOfPages = resultList.Paging.NumberOfPages
 		results := resultList.ResultlistEntries[0].ResultlistEntry
 		for i := 0; i < len(results); i++ {
 			entry := results[i]
 			id := entry.ID
-
 			rent := entry.RealEstate.WarmRent.Rent.Value
 			size := entry.RealEstate.LivingSpace
 			room := entry.RealEstate.NumberOfRooms
@@ -149,8 +148,8 @@ func getAllListings() []offer {
 			tauschOffer := strings.Contains(strings.ToLower(title), "tausch")
 			maxWarmRent := float32(1000)
 
-			if !wbsOffer && !tauschOffer && rent < maxWarmRent {
-				offers = append(offers, offer{ID: id, Rent: rent, Size: size, Room: room, Link: fmt.Sprintf("https://www.immobilienscout24.de/expose/%s", id)})
+			if (!wbsOffer || !config.ImmobilienScout.ExcludeWBS) && (!tauschOffer || !config.ImmobilienScout.ExcludeTausch) && rent < maxWarmRent {
+				offers = append(offers, offer{ID: id, Title: title, Rent: rent, Size: size, Room: room, Link: fmt.Sprintf("https://www.immobilienscout24.de/expose/%s", id)})
 			}
 		}
 	}
@@ -162,32 +161,21 @@ func getAllListings() []offer {
 	return offers
 }
 
-func requestPage(pageNumber int) resultList {
+func requestPage(config *Config, pageNumber int) resultList {
 	// Let's start with a base url
-	baseUrl, err := url.Parse("https://www.immobilienscout24.de")
+	baseUrl, err := url.Parse(config.ImmobilienScout.Search)
 	if err != nil {
 		fmt.Println("Malformed URL: ", err.Error())
 		panic(err)
 	}
 
-	// Add a Path Segment (Path segment is automatically escaped)
-	baseUrl.Path += "Suche/shape/wohnung-mieten"
-
-	// Prepare Query Parameters
-	params := url.Values{}
-	params.Add("petsallowedtypes", "yes,negotiable")
-	params.Add("numberofrooms", "1.5-")
-	params.Add("price", "-1000.0")
-	params.Add("pricetype", "calculatedtotalrent")
-	params.Add("livingspace", "50.0-")
-	params.Add("equipment", "builtinkitchen")
-	params.Add("shape", "d2h2X0llcW5wQWpLb0V4SGlEeGZBfWRCYF1nfkB8T2F6QHBBZWlCZ0JzYEJ1akBvb0FlV29yQGVVX051TGRQc1BiUHNOakxfT2RIaU50WGleeGdAb2dAZF9Aa2lAbmNAe0RobUFxQnBzQHhGbGBBZnBAdmlCdFt_cUBsWGxc")
-	params.Add("pagenumber", strconv.Itoa(pageNumber))
-
-	// Add Query Parameters to the URL
-	baseUrl.RawQuery = params.Encode() // Escape Query Parameters
+	// Handle pagination
+	query_params, _ := url.ParseQuery(baseUrl.RawQuery)
+	query_params.Set("pagenumber", strconv.Itoa(pageNumber))
+	baseUrl.RawQuery = query_params.Encode()
 
 	fmt.Println(baseUrl.String())
+
 	resp, err := http.Post(baseUrl.String(), "application/json", nil)
 	if err != nil {
 		panic(err)
@@ -202,7 +190,7 @@ func requestPage(pageNumber int) resultList {
 	return response.SearchResponseModel.ResultList
 }
 
-func readFile(cfg *Config) {
+func readFile(config *Config) {
 	f, err := os.Open("config.yml")
 	if err != nil {
 		panic(err)
@@ -210,14 +198,7 @@ func readFile(cfg *Config) {
 	defer f.Close()
 
 	decoder := yaml.NewDecoder(f)
-	err = decoder.Decode(cfg)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func readEnv(cfg *Config) {
-	err := envconfig.Process("", cfg)
+	err = decoder.Decode(config)
 	if err != nil {
 		panic(err)
 	}
