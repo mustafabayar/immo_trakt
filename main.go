@@ -18,55 +18,41 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type response struct {
-	SearchResponseModel searchResponseModel `json:"searchResponseModel"`
+type ImmoOffer struct {
+	SearchresponseModel struct {
+		ResultlistResultlist struct {
+			Paging struct {
+				Pagenumber       int `json:"pageNumber"`
+				Pagesize         int `json:"pageSize"`
+				NumberOfPages    int `json:"numberOfPages"`
+				NumberOfHits     int `json:"numberOfHits"`
+				NumberOfListings int `json:"numberOfListings"`
+			} `json:"paging"`
+			ResultlistEntries []struct {
+				ResultlistEntry []struct {
+					ID                   string `json:"@id"`
+					Publishdate          string `json:"@publishDate"`
+					ResultlistRealEstate struct {
+						ID    string `json:"@id"`
+						Title string `json:"title"`
+						Price struct {
+							Value    float32 `json:"value"`
+							Currency string  `json:"currency"`
+						} `json:"price"`
+						LivingSpace         float32 `json:"livingSpace"`
+						NumberOfRooms       float32 `json:"numberOfRooms"`
+						CalculatedTotalRent struct {
+							Totalrent struct {
+								Value    float32 `json:"value"`
+								Currency string  `json:"currency"`
+							} `json:"totalRent"`
+						} `json:"calculatedTotalRent"`
+					} `json:"resultlist.realEstate"`
+				} `json:"resultlistEntry"`
+			} `json:"resultlistEntries"`
+		} `json:"resultlist.resultlist"`
+	} `json:"searchResponseModel"`
 }
-
-type searchResponseModel struct {
-	ResultList resultList `json:"resultlist.resultlist"`
-}
-
-type resultList struct {
-	Paging            paging              `json:"paging"`
-	ResultlistEntries []resultlistEntries `json:"resultlistEntries"`
-}
-
-type paging struct {
-	PageNumber       int `json:"pageNumber"`
-	PageSize         int `json:"pageSize"`
-	NumberOfPages    int `json:"numberOfPages"`
-	NumberOfHits     int `json:"numberOfHits"`
-	NumberOfListings int `json:"numberOfListings"`
-}
-
-type resultlistEntries struct {
-	ResultlistEntry []resultlistEntry `json:"resultlistEntry"`
-}
-
-type resultlistEntry struct {
-	ID          string     `json:"@id"`
-	PublishDate string     `json:"@publishDate"`
-	RealEstate  realEstate `json:"resultlist.realEstate"`
-}
-
-type realEstate struct {
-	ID            string   `json:"@id"`
-	Title         string   `json:"title"`
-	ColdRent      coldRent `json:"price"`
-	WarmRent      warmRent `json:"calculatedTotalRent"`
-	LivingSpace   float32  `json:"livingSpace"`
-	NumberOfRooms float32  `json:"numberOfRooms"`
-}
-
-type coldRent struct {
-	Value    float32 `json:"value"`
-	Currency string  `json:"currency"`
-}
-
-type warmRent struct {
-	Rent coldRent `json:"totalRent"`
-}
-
 type offer struct {
 	ID    string
 	Title string
@@ -147,22 +133,21 @@ func getAllListings(config *Config) []offer {
 	numberOfPages := 1
 	offers := make([]offer, 0, 1000)
 	for i := 1; i <= numberOfPages; i++ {
-		var resultList resultList = requestPage(config, i)
-		numberOfPages = resultList.Paging.NumberOfPages
-		results := resultList.ResultlistEntries[0].ResultlistEntry
+		immoResponse := requestPage(config, i)
+		numberOfPages = immoResponse.SearchresponseModel.ResultlistResultlist.Paging.NumberOfPages
+		results := immoResponse.SearchresponseModel.ResultlistResultlist.ResultlistEntries[0].ResultlistEntry
 		for i := 0; i < len(results); i++ {
 			entry := results[i]
 			id := entry.ID
-			rent := entry.RealEstate.WarmRent.Rent.Value
-			size := entry.RealEstate.LivingSpace
-			room := entry.RealEstate.NumberOfRooms
-			title := entry.RealEstate.Title
+			rent := entry.ResultlistRealEstate.CalculatedTotalRent.Totalrent.Value
+			size := entry.ResultlistRealEstate.LivingSpace
+			room := entry.ResultlistRealEstate.NumberOfRooms
+			title := entry.ResultlistRealEstate.Title
 
 			wbsOffer := strings.Contains(strings.ToLower(title), "wbs")
 			tauschOffer := strings.Contains(strings.ToLower(title), "tausch")
-			maxWarmRent := float32(1000)
 
-			if (!wbsOffer || !config.ImmobilienScout.ExcludeWBS) && (!tauschOffer || !config.ImmobilienScout.ExcludeTausch) && rent < maxWarmRent {
+			if (!wbsOffer || !config.ImmobilienScout.ExcludeWBS) && (!tauschOffer || !config.ImmobilienScout.ExcludeTausch) {
 				offers = append(offers, offer{ID: id, Title: title, Rent: rent, Size: size, Room: room, Link: fmt.Sprintf("https://www.immobilienscout24.de/expose/%s", id)})
 			}
 		}
@@ -175,7 +160,7 @@ func getAllListings(config *Config) []offer {
 	return offers
 }
 
-func requestPage(config *Config, pageNumber int) resultList {
+func requestPage(config *Config, pageNumber int) ImmoOffer {
 	// Let's start with a base url
 	baseUrl, err := url.Parse(config.ImmobilienScout.Search)
 	if err != nil {
@@ -194,14 +179,15 @@ func requestPage(config *Config, pageNumber int) resultList {
 	if err != nil {
 		panic(err)
 	}
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
 
-	response := response{}
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	response := ImmoOffer{}
 	err = json.Unmarshal(bodyBytes, &response)
 	if err != nil {
-		panic(err)
+		log.Fatalf(err.Error())
 	}
-	return response.SearchResponseModel.ResultList
+
+	return response
 }
 
 func readFile(config *Config) {
