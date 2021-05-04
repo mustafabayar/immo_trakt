@@ -108,6 +108,10 @@ func main() {
 		log.Panic(err)
 	}
 
+	if len(updates) == 0 {
+		log.Fatalf("Telegram chat not found, please send a message to the bot first and try to run ImmoTrakt again!")
+	}
+
 	chat_id := updates[0].Message.Chat.ID
 	log.Printf("Telegram chat ID found as %v", chat_id)
 
