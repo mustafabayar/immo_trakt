@@ -53,7 +53,8 @@ type ImmoOffer struct {
 		} `json:"resultlist.resultlist"`
 	} `json:"searchResponseModel"`
 }
-type offer struct {
+
+type Offer struct {
 	ID    string
 	Title string
 	Rent  float32
@@ -101,7 +102,7 @@ func main() {
 	chat_id := updates[0].Message.Chat.ID
 	log.Printf("Telegram chat ID found as %v", chat_id)
 
-	m := make(map[string]offer)
+	m := make(map[string]Offer)
 	firstRun := true
 
 	log.Printf("Program scheduled to run with following frequency: %s", cfg.ImmoTrakt.Frequency)
@@ -129,9 +130,9 @@ func main() {
 	s.StartBlocking()
 }
 
-func getAllListings(config *Config) []offer {
+func getAllListings(config *Config) []Offer {
 	numberOfPages := 1
-	offers := make([]offer, 0, 1000)
+	offers := make([]Offer, 0, 1000)
 	for i := 1; i <= numberOfPages; i++ {
 		immoResponse := requestPage(config, i)
 		numberOfPages = immoResponse.SearchresponseModel.ResultlistResultlist.Paging.NumberOfPages
@@ -148,7 +149,7 @@ func getAllListings(config *Config) []offer {
 			tauschOffer := strings.Contains(strings.ToLower(title), "tausch")
 
 			if (!wbsOffer || !config.ImmobilienScout.ExcludeWBS) && (!tauschOffer || !config.ImmobilienScout.ExcludeTausch) {
-				offers = append(offers, offer{ID: id, Title: title, Rent: rent, Size: size, Room: room, Link: fmt.Sprintf("https://www.immobilienscout24.de/expose/%s", id)})
+				offers = append(offers, Offer{ID: id, Title: title, Rent: rent, Size: size, Room: room, Link: fmt.Sprintf("https://www.immobilienscout24.de/expose/%s", id)})
 			}
 		}
 	}
