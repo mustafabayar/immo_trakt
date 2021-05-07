@@ -2,8 +2,7 @@
 Just a hobby flat tracker for **ImmoScout24**. Finds offers according to your search and sends message via Telegram Bot.
 There is no web scraping, it works via API calls.
 
-## How to setup config?
-- - -
+## [How to setup config?](#how-to-setup-config)
 Copy the **config_skeleton.yml** and save it as **config.yml**. Then fill all the config parameters inside the config file.
 
 ### **immo_trakt.frequency**:
@@ -28,13 +27,22 @@ Botfather will return bot token to access the HTTP API.
 
 Before running the application make sure to first send a message to the created bot on Telegram so that the application can detect which chat to send messages.
 
-## How to run?
+## [How to run?](#how-to-run)
+### With Docker:
+Make sure to follow [How to setup config?](#how-to-setup-config) section and copy the `config.yml` file first. Docker is going to use that file. Afterwards:
+```
+docker build -t immo-trakt .
+docker run -d immo-trakt
+```
+Don't forget to check the logs of the running docker container. If you see this error:
+
+`Telegram chat not found, please send a message to the bot first and try to run the ImmoTrakt again!`
+
+Just do what the error says and run it again.
+
 - - -
+
+### Locally:
 ```
 go run main.go
 ```
-or 
-
-on Windows run the executable **immo-trakt.exe**
-
-on Macos run the **immo-trakt** binary (Make sure it is executable by running "chmod +x path-to-binary")
