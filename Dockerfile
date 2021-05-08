@@ -13,4 +13,4 @@ COPY config.yml ./
 # NB: this pulls directly from the upstream image, which already has ca-certificates:
 COPY --from=alpine:latest /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
-ENTRYPOINT ["/bin/immotrakt"]
+CMD ["./bin/immotrakt"]
