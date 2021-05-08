@@ -9,17 +9,18 @@ Copy the `config_skeleton.yml` and save it as `config.yml`. Then fill all the co
 Duration string as described in https://golang.org/pkg/time/#ParseDuration. For example `1m` means every 1 minute.
 
 ### `immo_trakt.include_existing_offers`:
-**True** if you want the bot to send message for all the existing offers that fits the given criteria.
-**False** if you want the bot to only start sending offers that are added after the app start running.
+`true` if you want the bot to send message for all the existing offers that fits the given search url. This will also send the new offers that are being added after app started, but you will also receive message for every single existing offer for the given search url.
+
+`false` if you want the bot to only start sending offers that are added after the app start running. This mode won't send the offers that were already exist before the app started. **false** makes more sense to not clutter your chat with tons of already existing offers that fits your search url. Because for most people, use-case of the bot is to see the ***new*** offers as soon as possible, not the existing ones as you can already see them when you open the immobilien scout.
 
 ### `immobilien_scout.search`:
 Simply go to immobilien scout and make a search according to your criterias and then copy the final url to this config value.
 
 ### `immobilien_scout.exclude_wbs`:
-**True** if you want offers that contains **WBS** keyword in title to be ignored. **False** otherwise.
+`true` if you want offers that contains **WBS** keyword in title to be ignored. `false` otherwise.
 
 ### `immobilien_scout.exclude_tausch`:
-**True** if you want offers that contains **TAUSCH** keyword in title to be ignored. **False** otherwise.
+`true` if you want offers that contains **TAUSCH** keyword in title to be ignored. `false` otherwise.
 
 ### `telegram.token`:
 Register a new bot with the [BotFather](https://telegram.me/BotFather). Follow the instructions and create your bot. 
