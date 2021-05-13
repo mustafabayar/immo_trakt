@@ -44,6 +44,7 @@ Just do what the error says and run it again.
 - - -
 
 ### Locally:
+Install [Go](https://golang.org/doc/install) if you don't already have it.
 ```
 go run main.go
 ```
