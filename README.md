@@ -1,4 +1,7 @@
 # ImmoTrakt
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e6ed33596cbf4f53acf33fade486f1d6)](https://app.codacy.com/gh/mustafabayar/immo_trakt?utm_source=github.com&utm_medium=referral&utm_content=mustafabayar/immo_trakt&utm_campaign=Badge_Grade_Settings)
+
 <img src="https://img.shields.io/github/license/mustafabayar/immo_trakt">
 <img src="https://img.shields.io/maintenance/yes/2021">
 
