@@ -1,8 +1,13 @@
 # ImmoTrakt
+<img src="https://img.shields.io/github/license/mustafabayar/immo_trakt">
+<img src="https://img.shields.io/maintenance/yes/2021">
+
+- - -
+
 Just a hobby flat tracker for <span style="color:#01ffd1">**ImmoScout24**</span>. Finds offers according to your search and sends message via Telegram Bot.
 There is no web scraping, it works via API calls.
 
-## [How to setup config?](#how-to-setup-config)
+## [How to setup config](#how-to-setup-config)
 Copy the `config_skeleton.yml` and save it as `config.yml`. Then fill all the config parameters inside the config file.
 
 ### `immo_trakt.frequency`:
@@ -28,7 +33,7 @@ Botfather will return bot token to access the HTTP API.
 
 Before running the application make sure to first send a message to the created bot on Telegram so that the application can detect which chat to send messages.
 
-## [How to run?](#how-to-run)
+## [How to run](#how-to-run)
 
 ### Locally with Go:
 Install [Go](https://golang.org/doc/install) if you don't already have it.
@@ -50,25 +55,25 @@ Just do what the error says and run it again.
 - - -
 ### Deploy to cloud:
 Make sure to follow [How to setup config?](#how-to-setup-config) section and copy the `config.yml` file. Then deploy to any of the cloud services you prefer. Here I will describe how to use [Heroku](https://www.heroku.com/pricing) to run this app free for 7/24:
-1. Install [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli) and [Docker](https://docs.docker.com/get-docker/)
-2. Login to heroku: 
+1.  Install [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli) and [Docker](https://docs.docker.com/get-docker/)
+2.  Login to heroku: 
 ```
 heroku login
 ```
-3. Log in to Container Registry: 
+3.  Log in to Container Registry: 
 ```
 heroku container:login
 ``` 
-4. Create app on Heroku: 
+4.  Create app on Heroku: 
 ```
 heroku create
 ```
 > This will give output like: ```Creating cool-app-name... done, stack is heroku-18```
-5. Build the image and push to Container Registry(Use the app name created from previous step): 
+5.  Build the image and push to Container Registry(Use the app name created from previous step): 
 ```
 heroku container:push worker --app cool-app-name
 ```
-6. Then release the image to your app: 
+6.  Then release the image to your app: 
 ```
 heroku container:release worker --app cool-app-name
 ```
