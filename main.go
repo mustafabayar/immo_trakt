@@ -18,7 +18,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type ImmoOffer struct {
+type immoOffer struct {
 	SearchresponseModel struct {
 		ResultlistResultlist struct {
 			Paging struct {
@@ -54,7 +54,7 @@ type ImmoOffer struct {
 	} `json:"searchResponseModel"`
 }
 
-type Offer struct {
+type offer struct {
 	ID    string
 	Title string
 	Rent  float32
@@ -63,7 +63,7 @@ type Offer struct {
 	Link  string
 }
 
-type Config struct {
+type config struct {
 	ImmoTrakt struct {
 		Frequency             string `yaml:"frequency"`
 		IncludeExistingOffers bool   `yaml:"include_existing_offers"`
@@ -79,7 +79,7 @@ type Config struct {
 }
 
 func main() {
-	var cfg Config
+	var cfg config
 	readFile(&cfg)
 
 	bot, err := tgbotapi.NewBotAPI(cfg.Telegram.Token)
@@ -99,10 +99,10 @@ func main() {
 		log.Fatalf("Telegram chat not found, please send a message to the bot first and try to run the ImmoTrakt again!")
 	}
 
-	chat_id := updates[0].Message.Chat.ID
-	log.Printf("Telegram chat ID found as %v", chat_id)
+	chatID := updates[0].Message.Chat.ID
+	log.Printf("Telegram Chat ID found as %v", chatID)
 
-	m := make(map[string]Offer)
+	m := make(map[string]offer)
 	firstRun := true
 
 	log.Printf("Program scheduled to run with following frequency: %s", cfg.ImmoTrakt.Frequency)
@@ -121,7 +121,7 @@ func main() {
 			if !firstRun || cfg.ImmoTrakt.IncludeExistingOffers {
 				log.Printf("Found new offer %s", listing.Link)
 				message := fmt.Sprintf("%s\n%v m²  -  %v rooms  -  %v € warm\n%s", listing.Title, listing.Size, listing.Room, listing.Rent, listing.Link)
-				msg := tgbotapi.NewMessage(chat_id, message)
+				msg := tgbotapi.NewMessage(chatID, message)
 				bot.Send(msg)
 			}
 		}
@@ -130,9 +130,9 @@ func main() {
 	s.StartBlocking()
 }
 
-func getAllListings(config *Config) []Offer {
+func getAllListings(config *config) []offer {
 	numberOfPages := 1
-	offers := make([]Offer, 0, 1000)
+	offers := make([]offer, 0, 1000)
 	for i := 1; i <= numberOfPages; i++ {
 		immoResponse := requestPage(config, i)
 		numberOfPages = immoResponse.SearchresponseModel.ResultlistResultlist.Paging.NumberOfPages
@@ -149,7 +149,7 @@ func getAllListings(config *Config) []Offer {
 			tauschOffer := strings.Contains(strings.ToLower(title), "tausch")
 
 			if (!wbsOffer || !config.ImmobilienScout.ExcludeWBS) && (!tauschOffer || !config.ImmobilienScout.ExcludeTausch) {
-				offers = append(offers, Offer{ID: id, Title: title, Rent: rent, Size: size, Room: room, Link: fmt.Sprintf("https://www.immobilienscout24.de/expose/%s", id)})
+				offers = append(offers, offer{ID: id, Title: title, Rent: rent, Size: size, Room: room, Link: fmt.Sprintf("https://www.immobilienscout24.de/expose/%s", id)})
 			}
 		}
 	}
@@ -161,28 +161,28 @@ func getAllListings(config *Config) []Offer {
 	return offers
 }
 
-func requestPage(config *Config, pageNumber int) ImmoOffer {
+func requestPage(config *config, pageNumber int) immoOffer {
 	// Let's start with a base url
-	baseUrl, err := url.Parse(config.ImmobilienScout.Search)
+	baseURL, err := url.Parse(config.ImmobilienScout.Search)
 	if err != nil {
 		fmt.Println("Malformed URL: ", err.Error())
 		panic(err)
 	}
 
 	// Handle pagination
-	query_params, _ := url.ParseQuery(baseUrl.RawQuery)
-	query_params.Set("pagenumber", strconv.Itoa(pageNumber))
-	baseUrl.RawQuery = query_params.Encode()
+	queryParams, _ := url.ParseQuery(baseURL.RawQuery)
+	queryParams.Set("pagenumber", strconv.Itoa(pageNumber))
+	baseURL.RawQuery = queryParams.Encode()
 
-	log.Printf("Making request to %s", baseUrl.String())
+	log.Printf("Making request to %s", baseURL.String())
 
-	resp, err := http.Post(baseUrl.String(), "application/json", nil)
+	resp, err := http.Post(baseURL.String(), "application/json", nil)
 	if err != nil {
 		panic(err)
 	}
 
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	response := ImmoOffer{}
+	response := immoOffer{}
 	err = json.Unmarshal(bodyBytes, &response)
 	if err != nil {
 		log.Fatalf(err.Error())
@@ -191,7 +191,7 @@ func requestPage(config *Config, pageNumber int) ImmoOffer {
 	return response
 }
 
-func readFile(config *Config) {
+func readFile(config *config) {
 	f, err := os.Open("config.yml")
 	if err != nil {
 		panic(err)
