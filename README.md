@@ -1,4 +1,7 @@
-# ImmoTrakt
+<p align="center">
+  <img src="https://imgur.com/C1aP2p5.png">
+</p>
+
 <p align="left">
 <img src="https://img.shields.io/github/license/mustafabayar/immo_trakt">
 <img src="https://img.shields.io/maintenance/yes/2021">
