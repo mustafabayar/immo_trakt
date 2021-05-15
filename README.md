@@ -43,23 +43,27 @@ Using combination of two is also okay. For example, you can set some values in c
 ## [How to run](#how-to-run)
 
 ### [Run locally with Go](#run-locally-with-go)
-Make sure to follow [How to setup config?](#how-to-setup-config) section and properly set configuration values.
-Install [Go](https://golang.org/doc/install) if you don't already have it.
+Make sure to follow [How to setup config](#how-to-setup-config) section to set configuration values properly.
+
+Install [Go](https://golang.org/doc/install) if you don't already have it. Afterwards execute the following command in project root folder:
 ```
 go run main.go
 ```
-- - -
+---
 ### [Run locally with Docker](#run-locally-with-docker)
-Make sure to follow [How to setup config?](#how-to-setup-config) section and properly set configuration values.Docker is going to use that file. Afterwards:
+Make sure to follow [How to setup config](#how-to-setup-config) section to set configuration values properly.
+
+Afterwards execute the following commands on project root folder:
 ```
 docker build -t immo-trakt .
 docker run -d immo-trakt
 ```
 Don't forget to check the logs of the running docker container.
 
-- - -
+---
 ### [Deploy to cloud](#deploy-to-cloud)
-Make sure to follow [How to setup config?](#how-to-setup-config) section and properly set configuration values.
+Make sure to follow [How to setup config](#how-to-setup-config) section to set configuration values properly.
+
 You can deploy the app to any of the cloud services you prefer. Here I will describe how to use [Heroku](https://www.heroku.com/pricing) to run this app free for 7/24:
 1.  Install [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli) and [Docker](https://docs.docker.com/get-docker/)
 2.  Login to heroku: 
