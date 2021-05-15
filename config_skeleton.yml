@@ -1,9 +1,9 @@
 immo_trakt:
   frequency: 1m #every 1 min
-  include_existing_offers: true
+  include_existing_offers: false
 telegram:
   token: botToken
 immobilien_scout:
   search: https://www.immobilienscout24.de/Suche/de/berlin/berlin/wohnung-mit-balkon-mieten?price=-1000.0&pricetype=calculatedtotalrent&enteredFrom=result_list
-  exclude_wbs: true #to exclude offers that contains word WBS in their title
-  exclude_tausch: true #to exclude offers that contains word TAUSCH in their title
+  exclude_wbs: false #to exclude offers that contains word WBS in their title
+  exclude_tausch: false #to exclude offers that contains word TAUSCH in their title

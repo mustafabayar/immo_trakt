@@ -15,6 +15,7 @@ import (
 
 	"github.com/go-co-op/gocron"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/kelseyhightower/envconfig"
 	"gopkg.in/yaml.v3"
 )
 
@@ -65,22 +66,34 @@ type offer struct {
 
 type config struct {
 	ImmoTrakt struct {
-		Frequency             string `yaml:"frequency"`
-		IncludeExistingOffers bool   `yaml:"include_existing_offers"`
+		Frequency             string `default:"1m" yaml:"frequency" envconfig:"IMMOTRAKT_FREQUENCY"`
+		IncludeExistingOffers bool   `default:"false" yaml:"include_existing_offers" envconfig:"IMMOTRAKT_INCLUDE_EXISTING"`
 	} `yaml:"immo_trakt"`
 	Telegram struct {
-		Token string `yaml:"token"`
+		Token string `yaml:"token" envconfig:"IMMOTRAKT_TELEGRAM_TOKEN"`
 	} `yaml:"telegram"`
 	ImmobilienScout struct {
-		Search        string `yaml:"search"`
-		ExcludeWBS    bool   `yaml:"exclude_wbs"`
-		ExcludeTausch bool   `yaml:"exclude_tausch"`
+		Search        string `yaml:"search" envconfig:"IMMOTRAKT_SEARCH"`
+		ExcludeWBS    bool   `default:"false" yaml:"exclude_wbs" envconfig:"IMMOTRAKT_EXCLUDE_WBS"`
+		ExcludeTausch bool   `default:"false" yaml:"exclude_tausch" envconfig:"IMMOTRAKT_EXCLUDE_TAUSCH"`
 	} `yaml:"immobilien_scout"`
 }
 
 func main() {
 	var cfg config
 	readFile(&cfg)
+	readEnv(&cfg)
+
+	// if len(cfg.Telegram.Token) == 0 || len(cfg.ImmobilienScout.Search) == 0 {
+	// 	log.Fatalf("Both config.yml and environment variables are not provided. Please provide a config file and try again.")
+	// }
+
+	log.Printf("ImmoTrakt is going to run with following configuration: \nFrequency: %s\nInclude Existing Offers: %v\nSearch: %s\nExclude WBS: %v\nExclude Tausch: %v",
+		cfg.ImmoTrakt.Frequency,
+		cfg.ImmoTrakt.IncludeExistingOffers,
+		cfg.ImmobilienScout.Search,
+		cfg.ImmobilienScout.ExcludeWBS,
+		cfg.ImmobilienScout.ExcludeTausch)
 
 	bot, err := tgbotapi.NewBotAPI(cfg.Telegram.Token)
 	if err != nil {
@@ -96,7 +109,7 @@ func main() {
 	}
 
 	if len(updates) == 0 {
-		log.Fatalf("Telegram chat not found, please send a message to the bot first and try to run the ImmoTrakt again!")
+		log.Fatalf("Telegram chat not found, please first send a message to the bot on Telegram and then try to run the ImmoTrakt again!")
 	}
 
 	chatID := updates[0].Message.Chat.ID
@@ -194,12 +207,20 @@ func requestPage(config *config, pageNumber int) immoOffer {
 func readFile(config *config) {
 	f, err := os.Open("config.yml")
 	if err != nil {
-		panic(err)
+		log.Println("config.yml is not found, as a backup we will try to load the values from environment variables.")
+		return
 	}
 	defer f.Close()
 
 	decoder := yaml.NewDecoder(f)
 	err = decoder.Decode(config)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func readEnv(config *config) {
+	err := envconfig.Process("", config)
 	if err != nil {
 		panic(err)
 	}
