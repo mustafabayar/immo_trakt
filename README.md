@@ -66,24 +66,25 @@ Make sure to follow [How to setup config](#how-to-setup-config) section to set c
 
 You can deploy the app to any of the cloud services you prefer. Here I will describe how to use [Heroku](https://www.heroku.com/pricing) to run this app free for 7/24:
 1.  Install [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli) and [Docker](https://docs.docker.com/get-docker/)
-2.  Login to heroku: 
+2. Start the docker engine as it is needed for the following commands.
+3.  Login to heroku: 
 ```
 heroku login
 ```
-3.  Log in to Container Registry: 
+4.  Log in to Container Registry: 
 ```
 heroku container:login
 ``` 
-4.  Create app on Heroku: 
+5.  Create app on Heroku: 
 ```
 heroku create
 ```
 > This will give output like: ```Creating cool-app-name... done, stack is heroku-18```
-5.  Build the image and push to Container Registry(Use the app name created from previous step): 
+6.  Build the image and push to Container Registry(Use the app name created from previous step): 
 ```
 heroku container:push worker --app cool-app-name
 ```
-6.  Then release the image to your app: 
+7.  Then release the image to your app: 
 ```
 heroku container:release worker --app cool-app-name
 ```
