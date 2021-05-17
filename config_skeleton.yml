@@ -3,6 +3,7 @@ immo_trakt:
   include_existing_offers: false
 telegram:
   token: botToken
+  chat_id: #Can be left empty
 immobilien_scout:
   search: https://www.immobilienscout24.de/Suche/de/berlin/berlin/wohnung-mit-balkon-mieten?price=-1000.0&pricetype=calculatedtotalrent&enteredFrom=result_list
   exclude_wbs: false #to exclude offers that contains word WBS in their title

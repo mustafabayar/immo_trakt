@@ -33,12 +33,17 @@ Using combination of two is also okay. For example, you can set some values in c
 | ------------------------------------ | ---------------------------- | ----------- | ------------- |
 | `immo_trakt.frequency` | `IMMOTRAKT_FREQUENCY` | Duration string as described in https://golang.org/pkg/time/#ParseDuration. For example ***1m*** means every 1 minute. | **1m** |
 | `immo_trakt.include_existing_offers` | `IMMOTRAKT_INCLUDE_EXISTING` | `true` if you want the bot to send message for all the existing offers that fits the given search url. `false` if you want the bot to only start sending offers that are added after the app started running. For most people, use-case of this bot is to see the ***new*** offers as soon as possible, not the existing ones as you can already see them when you open the ImmoblienScout website. Therefore **false** makes more sense to not clutter your chat with tons of already existing offers. | **false** |
-| `immobilien_scout.search` | `IMMOTRAKT_SEARCH` | Simply go to immobilien scout and make a search according to your criterias and then copy the final url to this config value. | None. Must be set |
+| `immobilien_scout.search` | `IMMOTRAKT_SEARCH` | Simply go to immobilien scout and make a search according to your criterias and then copy the final url to this config value. | None. Must be set. |
 | `immobilien_scout.exclude_wbs` | `IMMOTRAKT_EXCLUDE_WBS` | `true` if you want offers that contains **WBS** keyword in the offer title to be ignored. `false` otherwise. | **false** |
 | `immobilien_scout.exclude_tausch` | `IMMOTRAKT_EXCLUDE_TAUSCH` | `true` if you want offers that contains **TAUSCH** keyword in the offer title to be ignored. `false` otherwise. | **false** |
-| `telegram.token` | `IMMOTRAKT_TELEGRAM_TOKEN` | Register a new bot with the [BotFather](https://telegram.me/BotFather). Follow the instructions and create your bot. Botfather will return bot token to access the HTTP API. | None. Must be set |
+| `telegram.token` | `IMMOTRAKT_TELEGRAM_TOKEN` | Register a new bot with the [BotFather](https://telegram.me/BotFather). Follow the instructions and create your bot. Botfather will return bot token to access the HTTP API. | None. Must be set. |
+| `telegram.chat_id` | `IMMOTRAKT_TELEGRAM_CHAT_ID` | This is the persoanl chat you have with the created Bot. It is okay to not know your chat ID, just leave it empty and we will try to find the correct chat ID using the token. | None. Leave it empty if you don't know. |
 
 :exclamation: Before running the application make sure to first send a message to the created bot on Telegram so that the application can detect which chat to send messages.
+When you run the application and we retrieved the chat ID, it will be logged as:
+> Telegram chat ID found as XXXXXXXXX
+
+At that point you can take this chat ID and set it to `IMMOTRAKT_TELEGRAM_CHAT_ID` environment variable. This would make it very convenient because when you restart the application after some time, then you would have to do the same process of sending message to Telegram so that chat ID can be retrieved from API. But if you store the chat ID in config or env variable, you won't need to touch it again.
 
 ## [How to run](#how-to-run)
 
@@ -79,7 +84,7 @@ heroku container:login
 ```
 heroku create
 ```
-> This will give output like: ```Creating cool-app-name... done, stack is heroku-18```
+> This will give output like: `Creating cool-app-name... done, stack is heroku-18`
 6.  Build the image and push to Container Registry(Use the app name created from previous step): 
 ```
 heroku container:push worker --app cool-app-name
@@ -88,9 +93,12 @@ heroku container:push worker --app cool-app-name
 ```
 heroku container:release worker --app cool-app-name
 ```
-This will build the docker image from Dockerfile and release the app on Heroku. Go to your [dashboard](https://dashboard.heroku.com/apps) to view the app. After entering the app dashboard you can see the logs of running app by clicking ```More``` -> ```View logs``` on top right corner. 
-Also make sure in the Dyno formation widget, worker dyno is ```ON``` and there is no web dyno running.
+This will build the docker image from Dockerfile and release the app on Heroku. Go to your [dashboard](https://dashboard.heroku.com/apps) to view the app. After entering the app dashboard you can see the logs of running app by clicking `More` -> `View logs` on top right corner.
+In the logs, you should see your Telegram chat ID if the app was able to find it.
 
+8. (Optional) Go to `Settings` -> `Config Vars` and add a new config var key as `IMMOTRAKT_TELEGRAM_CHAT_ID` and value as the found chat ID from the logs.
+
+Also make sure in the Dyno formation widget, worker dyno is `ON` and there is no web dyno running.
 Normally Heroku free tier sleeps after 30 minutes of inactivity (Not receiving any web traffic). But this is only valid for web dynos, our app doesn't serve any endpoints therefore we don't need a web dyno, all we need is a background app. Worker dyno is best for this use-case as it doesn't go to sleep. Normally Heroku free tier gives 550 hours of free dyno usage when you register, which means you can not run it 7/24 for whole month. But if you add your credit card information they will increase the free dyno limit to 1000 hours which is more than enough to run an app for entire month.
 
 ## [Troubleshooting](#troubleshooting)

@@ -70,7 +70,8 @@ type config struct {
 		IncludeExistingOffers bool   `default:"false" yaml:"include_existing_offers" envconfig:"IMMOTRAKT_INCLUDE_EXISTING"`
 	} `yaml:"immo_trakt"`
 	Telegram struct {
-		Token string `yaml:"token" envconfig:"IMMOTRAKT_TELEGRAM_TOKEN"`
+		Token  string `yaml:"token" envconfig:"IMMOTRAKT_TELEGRAM_TOKEN"`
+		ChatID string `yaml:"chat_id" envconfig:"IMMOTRAKT_TELEGRAM_CHAT_ID"`
 	} `yaml:"telegram"`
 	ImmobilienScout struct {
 		Search        string `yaml:"search" envconfig:"IMMOTRAKT_SEARCH"`
@@ -84,9 +85,9 @@ func main() {
 	readFile(&cfg)
 	readEnv(&cfg)
 
-	// if len(cfg.Telegram.Token) == 0 || len(cfg.ImmobilienScout.Search) == 0 {
-	// 	log.Fatalf("Both config.yml and environment variables are not provided. Please provide a config file and try again.")
-	// }
+	if len(cfg.Telegram.Token) == 0 || len(cfg.ImmobilienScout.Search) == 0 {
+		log.Fatalf("Both config.yml and environment variables are not provided. Please provide a config file and try again.")
+	}
 
 	log.Printf("ImmoTrakt is going to run with following configuration: \nFrequency: %s\nInclude Existing Offers: %v\nSearch: %s\nExclude WBS: %v\nExclude Tausch: %v",
 		cfg.ImmoTrakt.Frequency,
@@ -101,24 +102,31 @@ func main() {
 	}
 	log.Printf("Telegram Bot authorized on account %s", bot.Self.UserName)
 
-	u := tgbotapi.NewUpdate(0)
-	updates, err := bot.GetUpdates(u)
+	var chatID int64
+	if len(cfg.Telegram.ChatID) > 0 {
+		chatID, _ = strconv.ParseInt(cfg.Telegram.ChatID, 10, 64)
+		log.Printf("Telegram chat ID is configured as %v", chatID)
+	} else {
+		log.Println("Telegram chat ID is not provided via configuration, I will try to retrieve it from Telegram")
+		u := tgbotapi.NewUpdate(0)
+		updates, err := bot.GetUpdates(u)
 
-	if err != nil {
-		log.Panic(err)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		if len(updates) == 0 {
+			log.Fatalf("Telegram chat not found, please first send a message to the bot on Telegram and then try to run the ImmoTrakt again!")
+		}
+
+		chatID = updates[0].Message.Chat.ID
+		log.Printf("Telegram chat ID found as %v", chatID)
 	}
-
-	if len(updates) == 0 {
-		log.Fatalf("Telegram chat not found, please first send a message to the bot on Telegram and then try to run the ImmoTrakt again!")
-	}
-
-	chatID := updates[0].Message.Chat.ID
-	log.Printf("Telegram Chat ID found as %v", chatID)
 
 	m := make(map[string]offer)
 	firstRun := true
 
-	log.Printf("Program scheduled to run with following frequency: %s", cfg.ImmoTrakt.Frequency)
+	log.Printf("ImmoTrakt scheduled to run with following frequency: %s", cfg.ImmoTrakt.Frequency)
 	s := gocron.NewScheduler(time.UTC)
 	s.Every(cfg.ImmoTrakt.Frequency).Do(func() {
 		var offers = getAllListings(&cfg)
