@@ -36,6 +36,7 @@ Using combination of two is also okay. For example, you can set some values in c
 | `immobilien_scout.search` | `IMMOTRAKT_SEARCH` | Simply go to immobilien scout and make a search according to your criterias and then copy the final url to this config value. | None. Must be set. |
 | `immobilien_scout.exclude_wbs` | `IMMOTRAKT_EXCLUDE_WBS` | `true` if you want offers that contains **WBS** keyword in the offer title to be ignored. `false` otherwise. | **false** |
 | `immobilien_scout.exclude_tausch` | `IMMOTRAKT_EXCLUDE_TAUSCH` | `true` if you want offers that contains **TAUSCH** keyword in the offer title to be ignored. `false` otherwise. | **false** |
+| `immobilien_scout.exclude_senior` | `IMMOTRAKT_EXCLUDE_SENIOR` | `true` if you want offers that contains **SENIOR** keyword in the offer title to be ignored. `false` otherwise. | **false** |
 | `telegram.token` | `IMMOTRAKT_TELEGRAM_TOKEN` | Register a new bot with the [BotFather](https://telegram.me/BotFather). Follow the instructions and create your bot. Botfather will return bot token to access the HTTP API. | None. Must be set. |
 | `telegram.chat_id` | `IMMOTRAKT_TELEGRAM_CHAT_ID` | This is the persoanl chat you have with the created Bot. It is okay to not know your chat ID, just leave it empty and we will try to find the correct chat ID using the token. | None. Leave it empty if you don't know. |
 

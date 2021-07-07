@@ -8,3 +8,4 @@ immobilien_scout:
   search: https://www.immobilienscout24.de/Suche/de/berlin/berlin/wohnung-mit-balkon-mieten?price=-1000.0&pricetype=calculatedtotalrent&enteredFrom=result_list
   exclude_wbs: false #to exclude offers that contains word WBS in their title
   exclude_tausch: false #to exclude offers that contains word TAUSCH in their title
+  exclude_senior: false #to exclude offers that contains word SENIOR in their title

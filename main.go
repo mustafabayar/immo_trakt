@@ -77,6 +77,7 @@ type config struct {
 		Search        string `yaml:"search" envconfig:"IMMOTRAKT_SEARCH"`
 		ExcludeWBS    bool   `default:"false" yaml:"exclude_wbs" envconfig:"IMMOTRAKT_EXCLUDE_WBS"`
 		ExcludeTausch bool   `default:"false" yaml:"exclude_tausch" envconfig:"IMMOTRAKT_EXCLUDE_TAUSCH"`
+		ExcludeSenior bool   `default:"false" yaml:"exclude_senior" envconfig:"IMMOTRAKT_EXCLUDE_SENIOR"`
 	} `yaml:"immobilien_scout"`
 }
 
@@ -168,8 +169,9 @@ func getAllListings(config *config) []offer {
 
 			wbsOffer := strings.Contains(strings.ToLower(title), "wbs")
 			tauschOffer := strings.Contains(strings.ToLower(title), "tausch")
+			seniorenOffer := strings.Contains(strings.ToLower(title), "senior")
 
-			if (!wbsOffer || !config.ImmobilienScout.ExcludeWBS) && (!tauschOffer || !config.ImmobilienScout.ExcludeTausch) {
+			if (!wbsOffer || !config.ImmobilienScout.ExcludeWBS) && (!tauschOffer || !config.ImmobilienScout.ExcludeTausch) && (!seniorenOffer || !config.ImmobilienScout.ExcludeSenior) {
 				offers = append(offers, offer{ID: id, Title: title, Rent: rent, Size: size, Room: room, Link: fmt.Sprintf("https://www.immobilienscout24.de/expose/%s", id)})
 			}
 		}
