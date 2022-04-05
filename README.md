@@ -15,6 +15,7 @@ There is no web scraping, it works via API calls.
 ---
 ##### Table of Contents  
 -   [How to setup config](#how-to-setup-config)
+-   [How to setup bot on Telegram](#how-to-setup-bot-on-telegram)
 -   [How to run](#how-to-run)
     -   [Run locally with Go](#run-locally-with-go)
     -   [Run locally with Docker](#run-locally-with-docker)
@@ -39,6 +40,9 @@ Using combination of two is also okay. For example, you can set some values in c
 | `immobilien_scout.exclude_senior` | `IMMOTRAKT_EXCLUDE_SENIOR` | `true` if you want offers that contains **SENIOR** keyword in the offer title to be ignored. `false` otherwise. | **false** |
 | `telegram.token` | `IMMOTRAKT_TELEGRAM_TOKEN` | Register a new bot with the [BotFather](https://telegram.me/BotFather). Follow the instructions and create your bot. Botfather will return bot token to access the HTTP API. | None. Must be set. |
 | `telegram.chat_id` | `IMMOTRAKT_TELEGRAM_CHAT_ID` | This is the personal chat you have with the created Bot. It is okay to not know your chat ID, just leave it empty and we will try to find the correct chat ID using the token. | None. Leave it empty if you don't know. |
+
+## [How to setup bot on Telegram](#how-to-setup-bot-on-telegram)
+Go to [Botfather](https://t.me/botfather) and request a new bot via /newbot command. Then Botfather will create a bot for you and give you the access token for it.
 
 :exclamation: Before running the application make sure to first send a message to the created bot on Telegram so that the application can detect which chat to send messages.
 When you run the application and we retrieved the chat ID, it will be logged as:
