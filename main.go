@@ -19,7 +19,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type immoOffer struct {
+type Response struct {
 	SearchresponseModel struct {
 		ResultlistResultlist struct {
 			Paging struct {
@@ -30,30 +30,35 @@ type immoOffer struct {
 				NumberOfListings int `json:"numberOfListings"`
 			} `json:"paging"`
 			ResultlistEntries []struct {
-				ResultlistEntry []struct {
-					ID                   string `json:"@id"`
-					Publishdate          string `json:"@publishDate"`
-					ResultlistRealEstate struct {
-						ID    string `json:"@id"`
-						Title string `json:"title"`
-						Price struct {
-							Value    float32 `json:"value"`
-							Currency string  `json:"currency"`
-						} `json:"price"`
-						LivingSpace         float32 `json:"livingSpace"`
-						NumberOfRooms       float32 `json:"numberOfRooms"`
-						CalculatedTotalRent struct {
-							Totalrent struct {
-								Value    float32 `json:"value"`
-								Currency string  `json:"currency"`
-							} `json:"totalRent"`
-						} `json:"calculatedTotalRent"`
-					} `json:"resultlist.realEstate"`
-				} `json:"resultlistEntry"`
+				ResultlistEntry ResultlistEntries `json:"resultlistEntry"`
 			} `json:"resultlistEntries"`
 		} `json:"resultlist.resultlist"`
 	} `json:"searchResponseModel"`
 }
+
+type ResultlistEntry struct {
+	ID                   string `json:"@id"`
+	Publishdate          string `json:"@publishDate"`
+	ResultlistRealEstate struct {
+		ID    string `json:"@id"`
+		Title string `json:"title"`
+		Price struct {
+			Value    float32 `json:"value"`
+			Currency string  `json:"currency"`
+		} `json:"price"`
+		LivingSpace         float32 `json:"livingSpace"`
+		NumberOfRooms       float32 `json:"numberOfRooms"`
+		CalculatedTotalRent struct {
+			Totalrent struct {
+				Value    float32 `json:"value"`
+				Currency string  `json:"currency"`
+			} `json:"totalRent"`
+		} `json:"calculatedTotalRent"`
+	} `json:"resultlist.realEstate"`
+}
+
+// Immoscout response sometimes contains this field as array and sometimes as single object. Creating this custom type here to be able write custom JSON marshaller on it
+type ResultlistEntries []ResultlistEntry
 
 type offer struct {
 	ID    string
@@ -184,7 +189,7 @@ func getAllListings(config *config) []offer {
 	return offers
 }
 
-func requestPage(config *config, pageNumber int) immoOffer {
+func requestPage(config *config, pageNumber int) Response {
 	// Let's start with a base url
 	baseURL, err := url.Parse(config.ImmobilienScout.Search)
 	if err != nil {
@@ -205,7 +210,7 @@ func requestPage(config *config, pageNumber int) immoOffer {
 	}
 
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	response := immoOffer{}
+	response := Response{}
 	err = json.Unmarshal(bodyBytes, &response)
 	if err != nil {
 		log.Fatalf(err.Error())
@@ -234,4 +239,19 @@ func readEnv(config *config) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+// Immoscout response sometimes contains resultlistEntry field as array and sometimes as single object. Creating this custom marshaller to parse it correctly depending on the type.
+func (r *ResultlistEntries) UnmarshalJSON(b []byte) (err error) {
+	single, multi := ResultlistEntry{}, []ResultlistEntry{}
+	if err = json.Unmarshal(b, &single); err == nil {
+		*r = make([]ResultlistEntry, 1)
+		[]ResultlistEntry(*r)[0] = ResultlistEntry(single)
+		return
+	}
+	if err = json.Unmarshal(b, &multi); err == nil {
+		*r = ResultlistEntries(multi)
+		return
+	}
+	return
 }
