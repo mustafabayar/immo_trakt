@@ -4,10 +4,14 @@
 
 <p align="left">
 <img src="https://img.shields.io/github/license/mustafabayar/immo_trakt">
-<img src="https://img.shields.io/maintenance/yes/2022">
 <a href="https://www.codacy.com/gh/mustafabayar/immo_trakt/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mustafabayar/immo_trakt&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/1b1ae1e6c305418d91da7c9c4c7d9adf"/></a>
 <a href="http://golang.org"><img src="https://img.shields.io/badge/Made%20with-Go-1f425f.svg"/></a>
+<img src="https://img.shields.io/maintenance/no/2022">
 </p>
+
+```diff
+!!! As of 08.06.2022 Immobilienscout turned this API off. So ImmoTrakt does NOT work anymore.
+```
 
 A flat tracker for <span style="color:#01ffd1">**ImmoScout24**</span>. Finds offers according to your search and sends message via Telegram Bot.
 There is no web scraping, it works via API calls.
