@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="https://imgur.com/C1aP2p5.png">
-</p>
-
 <p align="left">
 <img src="https://img.shields.io/github/license/mustafabayar/immo_trakt">
 <a href="https://www.codacy.com/gh/mustafabayar/immo_trakt/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mustafabayar/immo_trakt&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/1b1ae1e6c305418d91da7c9c4c7d9adf"/></a>
